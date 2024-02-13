@@ -1,5 +1,5 @@
 import express from 'express';
-import mariadb from 'mariadb';
+import {getAgents, getStudents, getCustomers, getCustomerByCode, deleteCustomerByCode, postCustomer} from './queries.js';
 
 const app = express();
 const port = 3000;
@@ -7,54 +7,11 @@ const port = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const pool = mariadb.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'root',
-  database: 'sample',
-  port: 3306,
-  connectionLimit: 5
+app.post('/test', (req, res) => {
+  const message = req.body;
+  console.log(message);
+  res.send(message);
 });
-
-async function getAgents() {
-  let conn;
-  try {
-    conn = await pool.getConnection();
-    const rows = await conn.query("SELECT * FROM agents");
-    console.log(rows);
-    return rows;
-  } catch (err) {
-    throw err;
-  } finally {
-    if (conn) conn.end(); // Close the connection properly
-  }
-}
-async function getStudents() {
-  let conn;
-  try {
-    conn = await pool.getConnection();
-    const rows = await conn.query("SELECT * FROM student");
-    console.log(rows);
-    return rows;
-  } catch (err) {
-    throw err;
-  } finally {
-    if (conn) conn.end(); // Close the connection properly
-  }
-}
-async function getCustomers() {
-  let conn;
-  try {
-    conn = await pool.getConnection();
-    const rows = await conn.query("SELECT * FROM customer");
-    console.log(rows);
-    return rows;
-  } catch (err) {
-    throw err;
-  } finally {
-    if (conn) conn.end(); // Close the connection properly
-  }
-}
 
 app.get('/agents', async (req, res) => {
   console.log('data requested');
@@ -80,6 +37,15 @@ app.get('/students', async (req, res) => {
   }
 });
 
+// should receive a JSON object with the same structure as the customer object
+// minus the CUST_CODE field
+// no need to json-ify the response, it's done automatically by express
+app.post('/customers', async (req, res) => {
+  console.log(req.body);
+  postCustomer(req.body);
+  res.send(req.body);
+});
+
 app.get('/customers', async (req, res) => {
   console.log('data requested');
   try {
@@ -92,6 +58,22 @@ app.get('/customers', async (req, res) => {
   }
 });
 
+// get customer by cust_code
+// customer_code has format of C +5 digit numeric code
+app.get('/customers/:cust_code', async (req, res) => {
+  console.log(req.params);
+  const cust_code = req.params.cust_code;
+  if (cust_code.length !== 6) {
+    res.status(400).json({ error: 'Invalid customer code' });
+    return;
+  }
+  const data = await getCustomerByCode(cust_code);
+  if (data.length === 0) {
+    res.status(404).json({ error: 'Customer not found' });
+    return;
+  }
+  res.json(data[0]);
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
