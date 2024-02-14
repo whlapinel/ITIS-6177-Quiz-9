@@ -1,4 +1,5 @@
-export const customer = {
+{
+  "customer": {
     "CUST_CODE": null,
     "CUST_NAME": "McDonald Douglass",
     "CUST_CITY": "Edinburgh",
@@ -12,3 +13,4 @@ export const customer = {
     "PHONE_NO": "113-73929493",
     "AGENT_CODE": "A003"
   }
+}
