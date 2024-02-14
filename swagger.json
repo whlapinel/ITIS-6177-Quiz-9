@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "This interactive API documentation was written for an assignment in ITIS 6177.",
+    "version": "1.0.0",
+    "title": "Coding Exercise 3",
+    "contact": {
+      "email": "whlapinel@gmail.com"
+    }
+  },
+  "host": "petstore.swagger.io",
+  "basePath": "/v2",
+  "tags": [
+    {
+      "name": "Customers",
+      "description": "Operations regarding customer data"
+    },
+    {
+      "name": "Students",
+      "description": "Operations regarding student data"
+    },
+    {
+      "name": "Agents",
+      "description": "Operations regarding agent data"
+    }
+  ]
+}

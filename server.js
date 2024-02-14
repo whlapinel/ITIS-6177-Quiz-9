@@ -1,8 +1,9 @@
-import express from 'express';
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-
 import {getAgents, getStudents, getCustomers, getCustomerByCode, deleteCustomerByCode, postCustomer} from './queries.js';
+import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import {createRequire} from 'module';
+const require = createRequire(import.meta.url);
+const swaggerDocument = require('./swagger.json');
 
 
 const app = express();
@@ -22,70 +23,13 @@ const options = {
   apis: ['./server.js'], // files containing annotations as above
 };
 
-const specs = swaggerJsdoc(options);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
-/**
- * @openapi
- * definitions:
- *   schemas:
- *     Customer:
- *       type: object
- *       properties:
- *         cust_code:
- *           type: string
- *           description: The customer code
- *           example: C00001
- *           required: false
- *         
- * 
- */
-
-
-/**
- * @openapi
- * /:
- *   get:
- *     description: Welcome to swagger-jsdoc!
- *     responses:
- *       200:
- *         description: Returns a mysterious string.
- */
-
-/**
- * @openapi
- * /test:
- *   post:
- *      description: Use to test if the server is running
- *      responses:
- *          200:
- *              description: returns the request body
- *      parameters:
- *         name: message
- *         in: body
- *         description: The message to send
- *         required: true
- *         type: object
- */
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.post('/test', (req, res) => {
   const message = req.body;
   console.log(message);
   res.send(message);
 });
-
-
-/**
- * @openapi
- * /agents:
- *   get:
- *     description: Get all agents
- *     responses:
- *       200:
- *         description: Returns all agents
- 
- */
-
 
 
 app.get('/agents', async (req, res) => {
@@ -99,18 +43,6 @@ app.get('/agents', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-
-/**
- * @openapi
- * /students:
- *  get:
- *   description: Get all students
- *   responses:
- *     200:
- *       description: Returns all students
- * 
- * 
- */
 
 app.get('/students', async (req, res) => {
   console.log('students requested');
@@ -127,22 +59,6 @@ app.get('/students', async (req, res) => {
 // should receive a JSON object with the same structure as the customer object
 // minus the CUST_CODE field
 // no need to json-ify the response, it's done automatically by express
-
-/**
- * @openapi
- * /customers:
- *   post:
- *     description: Add a new customer
- *     responses:
- *       200:
- *         description: Adds customer to the database
- *         parameters:
- *           name: customer
- *           in: body
- *           description: The customer to add
- *           schema:
- *             $ref: '#/definitions/schemas/Customer'
- */
 
 app.post('/customers', async (req, res) => {
   console.log(req.body);
