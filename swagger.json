@@ -8,7 +8,7 @@
             "email": "whlapinel@gmail.com"
         }
     },
-    "host": "localhost:3000",
+    "host": "159.65.185.236:3000",
     "basePath": "/",
     "tags": [
         {
