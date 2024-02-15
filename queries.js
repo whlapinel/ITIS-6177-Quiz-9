@@ -9,27 +9,33 @@ const pool = mariadb.createPool({
   connectionLimit: 5
 });
 
+export async function trimField(tableName, columnName) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const rows = await conn.query("UPDATE " + tableName + " SET " + columnName + " = TRIM(" + columnName + ")");
+    console.log(rows);
+    return rows;
+  } catch (err) {
+    throw err;
+  } finally {
+    if (conn) conn.end(); // Close the connection properly
+  }
+}
 
-// 1 PATCH request endpoint
-// PATCH <ip-address:port>/customers/:id
-// edits the row where customer_code = id
-// request body should specify the field to be modified and the new value
-
-// 1 PUT request endpoint
-// PUT <ip-address:port>/customers/:id
-// edits the row where customer_code = id
-// replaces current row with new data
-// request body should include all fields and values
-
-// 1 DELETE request endpoint
-// DELETE <ip-address:port>/customers/:id
-// id = customer code
-
-
-// 1 POST request endpoint
-// POST <ip-address:port>/customers/
-// should have customer object in request body (with null cust_code)
-// creates new row
+export async function getCustomers() {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const rows = await conn.query("SELECT * FROM customer");
+    console.log(rows);
+    return rows;
+  } catch (err) {
+    throw err;
+  } finally {
+    if (conn) conn.end(); // Close the connection properly
+  }
+}
 
 export async function postCustomer(customer) {
 
@@ -62,48 +68,6 @@ export async function postCustomer(customer) {
   }
 }
 
-export async function getAgents() {
-  let conn;
-  try {
-    conn = await pool.getConnection();
-    const rows = await conn.query("SELECT * FROM agents");
-    console.log(rows);
-    return rows;
-  } catch (err) {
-    throw err;
-  } finally {
-    if (conn) conn.end(); // Close the connection properly
-  }
-}
-
-export async function getStudents() {
-  let conn;
-  try {
-    conn = await pool.getConnection();
-    const rows = await conn.query("SELECT * FROM student");
-    console.log(rows);
-    return rows;
-  } catch (err) {
-    throw err;
-  } finally {
-    if (conn) conn.end(); // Close the connection properly
-  }
-}
-
-export async function getCustomers() {
-  let conn;
-  try {
-    conn = await pool.getConnection();
-    const rows = await conn.query("SELECT * FROM customer");
-    console.log(rows);
-    return rows;
-  } catch (err) {
-    throw err;
-  } finally {
-    if (conn) conn.end(); // Close the connection properly
-  }
-}
-
 export async function getCustomerByCode(cust_code) {
   let conn;
   try {
@@ -118,16 +82,67 @@ export async function getCustomerByCode(cust_code) {
   }
 }
 
-export async function deleteCustomerByCode(cust_code) {
+export async function patchCustomerByCode(cust_code, customer) {
   let conn;
   try {
     conn = await pool.getConnection();
-    const rows = await conn.query("DELETE FROM customer WHERE cust_code = ?", [cust_code]);
+    let query = "UPDATE customer SET ";
+    let keys = Object.keys(customer);
+    for (let i = 0; i < keys.length; i++) {
+      query += keys[i] + " = '" + customer[keys[i]] + "'";
+      if (i < keys.length - 1) {
+        query += ", ";
+      }
+    }
+    query += " WHERE CUST_CODE = '" + cust_code + "'";
+    console.log(query);
+    const rows = await conn.query(query);
     console.log(rows);
-    return rows;
+    if (rows.affectedRows === 0) {
+      return '404';
+    } else {
+      return rows;
+    }
   } catch (err) {
     throw err;
   } finally {
     if (conn) conn.end(); // Close the connection properly
   }
 }
+  
+export async function putCustomerByCode(cust_code, customer) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const rows = await conn.query("UPDATE customer SET CUST_NAME = ?, CUST_CITY = ?, WORKING_AREA = ?, CUST_COUNTRY = ?, GRADE = ?, OPENING_AMT = ?, RECEIVE_AMT = ?, PAYMENT_AMT = ?, OUTSTANDING_AMT = ?, PHONE_NO = ?, AGENT_CODE = ? WHERE CUST_CODE = ?", [customer.CUST_NAME, customer.CUST_CITY, customer.WORKING_AREA, customer.CUST_COUNTRY, customer.GRADE, customer.OPENING_AMT, customer.RECEIVE_AMT, customer.PAYMENT_AMT, customer.OUTSTANDING_AMT, customer.PHONE_NO, customer.AGENT_CODE, cust_code]);
+    console.log(rows);
+    if (rows.affectedRows === 0) {
+      return '404';
+    } else {
+      return rows;
+    }
+  } catch (err) {
+    throw err;
+  } finally {
+    if (conn) conn.end(); // Close the connection properly
+  }
+}
+
+export async function deleteCustomerByCode(cust_code) {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    const rows = await conn.query("DELETE FROM customer WHERE cust_code = ?", [cust_code]);
+    console.log(rows);
+    if (rows.affectedRows === 0) {
+      return '404';
+    } else {
+      return rows;
+    }
+  } catch (err) {
+    throw err;
+  } finally {
+    if (conn) conn.end(); // Close the connection properly
+  }
+}
+

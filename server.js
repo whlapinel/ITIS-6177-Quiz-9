@@ -1,4 +1,4 @@
-import {getAgents, getStudents, getCustomers, getCustomerByCode, deleteCustomerByCode, postCustomer} from './queries.js';
+import * as queries from './queries.js';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import {createRequire} from 'module';
@@ -25,17 +25,10 @@ const options = {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.post('/test', (req, res) => {
-  const message = req.body;
-  console.log(message);
-  res.send(message);
-});
-
-
-app.get('/agents', async (req, res) => {
+app.get('/customers', async (req, res) => {
   console.log('data requested');
   try {
-    const data = await getAgents();
+    const data = await queries.getCustomers();
     console.log(data);
     res.json(data); // Send the fetched data directly
   } catch (err) {
@@ -44,26 +37,10 @@ app.get('/agents', async (req, res) => {
   }
 });
 
-app.get('/students', async (req, res) => {
-  console.log('students requested');
-  try {
-    const data = await getStudents();
-    console.log(data);
-    res.json(data); // Send the fetched data directly
-  } catch (err) {
-    console.error('Error fetching students:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// should receive a JSON object with the same structure as the customer object
-// minus the CUST_CODE field
-// no need to json-ify the response, it's done automatically by express
-
 app.post('/customers', async (req, res) => {
   console.log(req.body);
   try {
-    postCustomer(req.body);
+    queries.postCustomer(req.body);
     res.status(201).send("customer added");
   }
   catch (err) {
@@ -72,20 +49,6 @@ app.post('/customers', async (req, res) => {
   }
 });
 
-app.get('/customers', async (req, res) => {
-  console.log('data requested');
-  try {
-    const data = await getCustomers();
-    console.log(data);
-    res.json(data); // Send the fetched data directly
-  } catch (err) {
-    console.error('Error fetching agents:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// get customer by cust_code
-// customer_code has format of C +5 digit numeric code
 app.get('/customers/:cust_code', async (req, res) => {
   console.log(req.params);
   const cust_code = req.params.cust_code;
@@ -93,7 +56,7 @@ app.get('/customers/:cust_code', async (req, res) => {
     res.status(400).json({ error: 'Invalid customer code' });
     return;
   }
-  const data = await getCustomerByCode(cust_code);
+  const data = await queries.getCustomerByCode(cust_code);
   if (data.length === 0) {
     res.status(404).json({ error: 'Customer not found' });
     return;
@@ -101,6 +64,83 @@ app.get('/customers/:cust_code', async (req, res) => {
   res.json(data[0]);
 });
 
+app.put('/customers/:cust_code', async (req, res) => {
+  console.log(req.params);
+  const cust_code = req.params.cust_code;
+  console.log(cust_code);
+  const customer = req.body;
+  customer.CUST_CODE = cust_code;
+  console.log(customer);
+  if (cust_code.length !== 6) {
+    res.status(400).json({ error: 'Invalid customer code' });
+    return;
+  }
+  const data = await queries.getCustomerByCode(cust_code);
+  if (data.length === 0) {
+    res.status(404).json({ error: 'Customer not found' });
+    return;
+  }
+  try {
+    queries.putCustomerByCode(cust_code, req.body);
+    res.status(204).send("customer updated");
+  }
+  catch (err) {
+    console.error('Error updating customer:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.patch('/customers/:cust_code', async (req, res) => {
+  console.log(req.params);
+  const cust_code = req.params.cust_code;
+  console.log(cust_code);
+  const customer = req.body;
+  customer.CUST_CODE = cust_code;
+  console.log(customer);
+  if (cust_code.length !== 6) {
+    res.status(400).json({ error: 'Invalid customer code' });
+    return;
+  }
+  const data = await queries.getCustomerByCode(cust_code);
+  if (data.length === 0) {
+    res.status(404).json({ error: 'Customer not found' });
+    return;
+  }
+  try {
+    queries.patchCustomerByCode(cust_code, req.body);
+    res.status(204).send("customer updated");
+  }
+  catch (err) {
+    console.error('Error updating customer:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+
+
+});
+
+app.delete('/customers/:cust_code', async (req, res) => {
+  console.log(req.params);
+  const cust_code = req.params.cust_code;
+  console.log(cust_code);
+  if (cust_code.length !== 6) {
+    res.status(400).json({ error: 'Invalid customer code' });
+    return;
+  }
+  const status = await queries.deleteCustomerByCode(cust_code);
+  if (status === '404') {
+    res.status(404).json({ error: 'Customer not found' });
+    return;
+  }
+  res.status(204).send("customer deleted");
+});
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 });
+
+// trimField("customer", "CUST_CITY");
+
+function trimField(tableName, columnName) {
+  console.log('trimming customer city');
+  queries.trimField(tableName, columnName);
+}
