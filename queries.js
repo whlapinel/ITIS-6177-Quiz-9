@@ -27,7 +27,7 @@ export async function getCustomers() {
   let conn;
   try {
     conn = await pool.getConnection();
-    const rows = await conn.query("SELECT * FROM customer");
+    const rows = await conn.query("SELECT * FROM customer order by CUST_CODE");
     console.log(rows);
     return rows;
   } catch (err) {

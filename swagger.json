@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "For ITIS 6177 Quiz 8",
+        "description": "For ITIS 6177 - Quiz 8",
         "version": "1.0.0",
         "title": "API assignment",
         "contact": {
@@ -52,7 +52,7 @@
                     "Customers"
                 ],
                 "summary": "Add a new customer",
-                "description": "",
+                "description": "Note: customer code is auto-generated and will be ignored.",
                 "operationId": "addCustomer",
                 "consumes": [
                     "application/json",
