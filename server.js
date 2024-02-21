@@ -18,10 +18,3 @@ app.get('/say', async (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 });
-
-// trimField("customer", "CUST_CITY");
-
-function trimField(tableName, columnName) {
-  console.log('trimming customer city');
-  queries.trimField(tableName, columnName);
-}
