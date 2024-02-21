@@ -2,6 +2,7 @@ import * as queries from './queries.js';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import {createRequire} from 'module';
+import axios from 'axios';
 const require = createRequire(import.meta.url);
 const swaggerDocument = require('./swagger.json');
 
@@ -28,9 +29,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get('/say', async (req, res) => {
   console.log('say function called on web server.');
   console.log('keyword: ', req.query.keyword);
-  const res = axios.get('https://itis-6177-quiz-9-hy3v5hewwq-ue.a.run.app?keyword=' + req.query.keyword);
-  console.log(res.data);
-  res.send(res.data);
+  const say = await axios.get('https://itis-6177-quiz-9-hy3v5hewwq-ue.a.run.app/say?keyword=' + req.query.keyword);
+  console.log(say.data);
+  res.send(say.data);
 })
 
 app.get('/customers', async (req, res) => {
